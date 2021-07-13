@@ -1,5 +1,6 @@
 package com.example.sunny.ui.place;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -18,8 +19,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.sunny.MainActivity;
 import com.example.sunny.R;
-import com.example.sunny.logic.model.Place;
+
+import com.example.sunny.WeatherActivity;
+import com.example.sunny.logic.model.PlaceResponse;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -30,8 +34,12 @@ public class PlaceFragment extends Fragment {
     //private Adapter PlaceAdapter;
 
 
+    public PlaceViewModel getViewModel() {
+        return viewModel;
+    }
+
     @Override
-    public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+    public View onCreateView( LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 
         viewModel = new ViewModelProvider(this).get(PlaceViewModel.class);
 
@@ -41,6 +49,19 @@ public class PlaceFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if(getActivity().getClass().equals(MainActivity.class) && viewModel.isPlaceSaved()){
+            PlaceResponse.Place place = viewModel.getSavedPlace();
+            Intent intent = new Intent(getContext(), WeatherActivity.class);
+            intent.putExtra("location_lng",place.getLocation().getLng());
+            intent.putExtra("location_lat",place.getLocation().getLat());
+            intent.putExtra("place_name",place.getName());
+
+            startActivity(intent);
+            getActivity().finish();
+            return;
+        }
+
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 
         RecyclerView recyclerView = (RecyclerView) getActivity().findViewById(R.id.recyclerView);
@@ -82,9 +103,9 @@ public class PlaceFragment extends Fragment {
 
         });
 
-        viewModel.placeLiveData.observe(getViewLifecycleOwner(), new Observer<List<Place>>() {
+        viewModel.placeLiveData.observe(getViewLifecycleOwner(), new Observer<List<PlaceResponse.Place>>() {
             @Override
-            public void onChanged(List<Place> placeList) {
+            public void onChanged(List<PlaceResponse.Place> placeList) {
                 if(placeList != null){
                     recyclerView.setVisibility(View.VISIBLE);
                     bgImageView.setVisibility(View.GONE);

@@ -11,8 +11,13 @@ public class ServiceCreator {
             .addConverterFactory(GsonConverterFactory.create())
             .build();
 
-    public static PlaceService ServiceCreate(Class<PlaceService> placeServiceClass){
+    public static PlaceService PCreate(Class<PlaceService> placeServiceClass){
        PlaceService placeService =  retrofit.create(placeServiceClass);
        return placeService;
+    }
+
+    public static WeatherService WCreate(Class<WeatherService> weatherServiceClass){
+        WeatherService weatherService = retrofit.create(weatherServiceClass);
+        return weatherService;
     }
 }

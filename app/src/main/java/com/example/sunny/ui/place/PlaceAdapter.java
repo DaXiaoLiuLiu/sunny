@@ -1,5 +1,7 @@
 package com.example.sunny.ui.place;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +12,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sunny.R;
-import com.example.sunny.logic.model.Place;
+import com.example.sunny.WeatherActivity;
+
+import com.example.sunny.logic.model.PlaceResponse;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -18,10 +22,12 @@ import java.util.List;
 
 public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.ViewHolder> {
 
-    private static List<Place>  placeList;
+    private static List<PlaceResponse.Place>  placeList;
+    private static PlaceFragment fragment;
 
-    public PlaceAdapter(Fragment fragment,List<Place> placeList){
+    public PlaceAdapter(PlaceFragment fragment,List<PlaceResponse.Place> placeList){
         this.placeList = placeList;
+        this.fragment = fragment;
     }
 
 
@@ -31,12 +37,40 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.ViewHolder> 
     public ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.place_item,parent,false);
         ViewHolder viewHolder = new ViewHolder(view);
+        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int position = viewHolder.getAdapterPosition();
+                PlaceResponse.Place place = placeList.get(position);
+                Activity activity = fragment.getActivity();
+
+
+                if(activity.getClass().equals(WeatherActivity.class)){
+                    ((WeatherActivity) activity).getDrawerLayout().closeDrawers();
+                    ((WeatherActivity) activity).getViewModel().locationLng = place.getLocation().getLng();
+                    ((WeatherActivity) activity).getViewModel().locationLat = place.getLocation().getLat();
+                    ((WeatherActivity) activity).getViewModel().placeName = place.getName();
+                    ((WeatherActivity) activity).refreshWeather();
+
+                }
+                else{
+                    Intent intent = new Intent(parent.getContext(), WeatherActivity.class);
+                    intent.putExtra("location_lng",place.getLocation().getLng());
+                    intent.putExtra("location_lat",place.getLocation().getLat());
+                    intent.putExtra("place_name",place.getName());
+                    fragment.startActivity(intent);
+                    fragment.getActivity().finish();
+                }
+
+                fragment.getViewModel().savePlace(place);
+            }
+        });
         return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull @NotNull ViewHolder holder, int position) {
-            Place place = placeList.get(position);
+            PlaceResponse.Place place = placeList.get(position);
             holder.placeName.setText(place.getName());
             holder.placeAddress.setText(place.getAddress());
     }

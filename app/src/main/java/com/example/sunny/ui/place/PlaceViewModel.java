@@ -6,7 +6,8 @@ import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
 import com.example.sunny.logic.Repository;
-import com.example.sunny.logic.model.Place;
+import com.example.sunny.logic.dao.PlaceDao;
+import com.example.sunny.logic.model.PlaceResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +16,9 @@ public class PlaceViewModel extends ViewModel {
     private  static MutableLiveData<String> searchLiveData =
             new MutableLiveData<>();
 
-    private static List<Place> placeList = new ArrayList<>();
+    private static List<PlaceResponse.Place> placeList = new ArrayList<>();
 
-    LiveData<List<Place>> placeLiveData = Transformations.switchMap(searchLiveData,
+    LiveData<List<PlaceResponse.Place>> placeLiveData = Transformations.switchMap(searchLiveData,
             query -> Repository.searchPlaces(query));
 
     public void searchPlace(String query){
@@ -26,11 +27,11 @@ public class PlaceViewModel extends ViewModel {
 
 
 
-    public List<Place> getPlaceList() {
+    public List<PlaceResponse.Place> getPlaceList() {
         return placeList;
     }
 
-    public void setPlaceList(List<Place> placeList) {
+    public void setPlaceList(List<PlaceResponse.Place> placeList) {
         this.placeList = placeList;
     }
 
@@ -38,7 +39,21 @@ public class PlaceViewModel extends ViewModel {
         placeList.clear();
     }
 
-    public void addAllList(List<Place> places){
+    public void addAllList(List<PlaceResponse.Place> places){
         placeList.addAll(places);
+    }
+
+
+    //用于物理存储位置信息
+    public void savePlace(PlaceResponse.Place place){
+        Repository.savePlace(place);
+    }
+
+    public  PlaceResponse.Place getSavedPlace(){
+        return Repository.getSavedPlace();
+    }
+
+    public  Boolean isPlaceSaved(){
+        return Repository.isPlaceSaved();
     }
 }
