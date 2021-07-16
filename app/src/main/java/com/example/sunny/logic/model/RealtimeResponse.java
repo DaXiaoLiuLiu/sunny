@@ -2,9 +2,22 @@ package com.example.sunny.logic.model;
 
 import com.google.gson.annotations.SerializedName;
 
+/*
+ * @Author Lxf
+ * @Date 2021/7/16 10:19
+ * @Description 实时天气信息数据模型
+ * @Since version-1.0
+ */
+
 public class RealtimeResponse {
-    private String status;
-    private Result result;
+    private String status ;
+    private Result result ;
+    private String error = new String();
+    //创建一个error变量，可以方便进行网络请求层面的调试
+
+    public String getError() {
+        return error;
+    }
 
     public String getStatus() {
         return status;

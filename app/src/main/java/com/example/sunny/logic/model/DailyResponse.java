@@ -2,13 +2,20 @@ package com.example.sunny.logic.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+/*
+ * @Author Lxf
+ * @Date 2021/7/16 10:28
+ * @Description 未来天气数据模型类
+ * @Since version-1.0
+ */
 
 public class DailyResponse {
-    private String status;
+    private String status ;
 
-    private Result result;
+    private Result result ;
 
     public String getStatus() {
         return status;
@@ -43,8 +50,8 @@ public class DailyResponse {
 
 
     public class Skycon{
-        String value;
-        Date date;
+        String value = new String();
+        Date date = new Date();
 
         public String getValue() {
             return value;
@@ -57,10 +64,10 @@ public class DailyResponse {
 
 
     public class Daily{
-        private List<Temperature> temperature;
-        private List<Skycon> skycon;
+        private List<Temperature> temperature = new ArrayList<>();
+        private List<Skycon> skycon = new ArrayList<>();
         @SerializedName("life_index")
-        private LifeIndex lifeIndex;
+        private LifeIndex lifeIndex = new LifeIndex();
 
         public List<Temperature> getTemperature() {
             return temperature;
@@ -78,7 +85,7 @@ public class DailyResponse {
 
 
     public class LifeDescription{
-        String desc;
+        String desc = new String();
 
         public String getDesc() {
             return desc;
@@ -87,17 +94,17 @@ public class DailyResponse {
 
 
     public class LifeIndex{
-        List<LifeDescription> coldRisk;
-        List<LifeDescription> caeWashing;
-        List<LifeDescription> ultraviolet;
-        List<LifeDescription> dressing;
+        List<LifeDescription> coldRisk = new ArrayList<>();
+        List<LifeDescription> carWashing = new ArrayList<>();;
+        List<LifeDescription> ultraviolet = new ArrayList<>();;
+        List<LifeDescription> dressing = new ArrayList<>();;
 
         public List<LifeDescription> getColdRisk() {
             return coldRisk;
         }
 
-        public List<LifeDescription> getCaeWashing() {
-            return caeWashing;
+        public List<LifeDescription> getCarWashing() {
+            return carWashing;
         }
 
         public List<LifeDescription> getUltraviolet() {
@@ -111,7 +118,7 @@ public class DailyResponse {
 
 
     public class Result{
-        Daily daily;
+        Daily daily = new Daily();
 
         public Daily getDaily() {
             return daily;

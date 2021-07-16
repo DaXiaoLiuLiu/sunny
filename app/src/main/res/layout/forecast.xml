@@ -25,6 +25,7 @@
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             />
+
         <LinearLayout
             android:id="@+id/forecastLayout"
             android:layout_width="match_parent"

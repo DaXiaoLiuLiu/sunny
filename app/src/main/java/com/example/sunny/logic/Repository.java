@@ -2,7 +2,6 @@ package com.example.sunny.logic;
 
 import android.util.Log;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.sunny.logic.dao.PlaceDao;
@@ -15,64 +14,87 @@ import com.example.sunny.logic.network.SunnyWeatherNetwork;
 
 import java.util.List;
 
+import static java.lang.Thread.sleep;
+/*
+ * @Author Lxf
+ * @Date 2021/7/16 10:29
+ * @Description 仓库类，封装了许多数据获取操作，提供数据给ViewModel层，同时接收ViewModel层的数据请求
+ * @Since version-1.0
+ */
+
 public class Repository {
     private static List<PlaceResponse.Place> places;
     //private LiveData<List<Place>>  livePlaces ;
+    private static MutableLiveData<List<PlaceResponse.Place>> placesData =
+            new MutableLiveData<>();
+    final static SunnyWeatherNetwork sunnyWeatherNetwork = new SunnyWeatherNetwork();
 
-    public static MutableLiveData<List<PlaceResponse.Place>> searchPlaces(String query){
-        MutableLiveData<List<PlaceResponse.Place>> placesData = new MutableLiveData<>();
+    //由于是静态方法，创建时就会调用一次
+    public  MutableLiveData<List<PlaceResponse.Place>> searchPlaces(String query){
+
 
         new Thread(new Runnable() {
             @Override
-
             public void run() {
 
-
                 try {
-                    PlaceResponse placeResponse = SunnyWeatherNetwork.searchPlaces(query);
-
-                    if (placeResponse.getStatus() == "ok") {
-                        places = placeResponse.getPlaces();
-                        placesData.postValue(places);
+                    /*获取到搜索到的数据，在network层已经进行判空处理，保证了接收到的placeResponse不为null
+                    * 但由于网络请求的同步问题，每次发出的第一个请求的结果，会导致placeResponse为 null，
+                    * 因此在PlaceResponse中，需要new 一个 status和result，避免空指针异常。
+                    *
+                    * */
+                    final PlaceResponse placeResponse = sunnyWeatherNetwork.searchPlaces(query);
+                    if (placeResponse.getStatus().equals("ok")) {//如果状态ok了，一般来说places就不会有空指针异常
+                        places = placeResponse.getPlaces();// 获取到包含地区信息的list
+                        Log.d("Repository","place response success " );
+                        placesData.postValue(places);//将list传入Livedata内，并准备返回
                     } else {
-                        Log.d("Repository", "response status is" + placeResponse.getStatus());
+                        //返回状态不是ok的情况
+                        Log.d("Repository", "place status is" + placeResponse.getStatus() );
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                     Log.d("Repository","PlaceResponse Error!");
                 } finally {
-                    Log.d("Repository","PlaceResponse finsh!");
+                    Log.d("Repository","PlaceResponse finish!");
                 }
 
             }
         }).start();
-        return placesData;
+        return placesData;//返回livedata
     }
 
-    public static MutableLiveData<Weather> refreshWeather(String lng,String lat){
+    //这里属于显示天气信息模块中的刷新天气时用到的方法
+    public   MutableLiveData<Weather> refreshWeather(String lng,String lat){
         MutableLiveData<Weather> weatherData = new MutableLiveData<>();
 
         new Thread(new Runnable() {
-
             @Override
             public void run() {
-                DailyResponse dailyResponse = new DailyResponse();
-                RealtimeResponse realtimeResponse = new RealtimeResponse();
-
 
                 try{
-                    realtimeResponse =SunnyWeatherNetwork.getRealtimeWeather(lng,lat);
-                    dailyResponse = SunnyWeatherNetwork.getDailyWeather(lng,lat);
+                    RealtimeResponse realtimeResponse ;
+                    DailyResponse dailyResponse ;
 
-                    if(realtimeResponse.getStatus() == "ok" && dailyResponse.getStatus() == "ok"){
+                    //该处的do while 循环是为了解决 网络请求进程 的同步问题，使用sleep后，可以减少网络请求次数
+                    do {
+                        realtimeResponse = sunnyWeatherNetwork.getRealtimeWeather(lng, lat);
+                        dailyResponse = sunnyWeatherNetwork.getDailyWeather(lng, lat);
+                        Log.d("Repository","refresh Weather 数据申请中");
+                        sleep(500);
+                    }while (realtimeResponse == null || dailyResponse == null);//只有两个不为null时才跳出循环
+
+                    if(realtimeResponse.getStatus().equals("ok") && dailyResponse.getStatus().equals("ok")){
                         Weather weather = new Weather(realtimeResponse.getResult().getRealtime(),
                                 dailyResponse.getResult().getDaily() );
+
                         weatherData.postValue(weather);
 
                     }
                     else {
+
                         Log.d("Repository", "Daily response status is" + dailyResponse.getStatus());
-                        Log.d("Repository", "Realtime response status is" + realtimeResponse.getStatus());
+                        Log.d("Repository", "Realtime response error is" + realtimeResponse.getError());
 
                     }
                 }
@@ -85,19 +107,24 @@ public class Repository {
                 }
             }
         }).start();
+
         return weatherData;
     }
 
     //物理存储地点信息
     public static void savePlace(PlaceResponse.Place place){
+
         PlaceDao.savePlace(place);
     }
 
     public static PlaceResponse.Place getSavedPlace(){
+
         return PlaceDao.getSavedPlace();
     }
 
     public static Boolean isPlaceSaved(){
+
         return PlaceDao.isPlaceSaved();
     }
 }
+

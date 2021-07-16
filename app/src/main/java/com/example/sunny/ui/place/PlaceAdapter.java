@@ -2,16 +2,20 @@ package com.example.sunny.ui.place;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.sunny.R;
+import com.example.sunny.SunnyWeatherApplication;
 import com.example.sunny.WeatherActivity;
 
 import com.example.sunny.logic.model.PlaceResponse;
@@ -37,6 +41,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.ViewHolder> 
     public ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.place_item,parent,false);
         ViewHolder viewHolder = new ViewHolder(view);
+
         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -46,6 +51,11 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.ViewHolder> 
 
 
                 if(activity.getClass().equals(WeatherActivity.class)){
+                    //搜索城市操作
+                    SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swipeRefresh);
+                    DrawerLayout drawerLayout = (DrawerLayout) view.findViewById(R.id.drawerLayout);
+
+                    Log.d("PlaceAdapter","跳转响应1");
                     ((WeatherActivity) activity).getDrawerLayout().closeDrawers();
                     ((WeatherActivity) activity).getViewModel().locationLng = place.getLocation().getLng();
                     ((WeatherActivity) activity).getViewModel().locationLat = place.getLocation().getLat();
@@ -54,14 +64,17 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.ViewHolder> 
 
                 }
                 else{
+                    //将数据上传
+                    Log.d("PlaceAdapter","跳转响应2");
                     Intent intent = new Intent(parent.getContext(), WeatherActivity.class);
                     intent.putExtra("location_lng",place.getLocation().getLng());
                     intent.putExtra("location_lat",place.getLocation().getLat());
                     intent.putExtra("place_name",place.getName());
                     fragment.startActivity(intent);
-                    fragment.getActivity().finish();
+                    activity.finish();
                 }
 
+                Log.d("PlaceAdapter","存储信息");
                 fragment.getViewModel().savePlace(place);
             }
         });

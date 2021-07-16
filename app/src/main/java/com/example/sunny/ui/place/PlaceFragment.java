@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +31,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class PlaceFragment extends Fragment {
-    private PlaceViewModel viewModel;
+
+    private static PlaceViewModel viewModel;
     //private Adapter PlaceAdapter;
 
 
@@ -40,7 +42,7 @@ public class PlaceFragment extends Fragment {
 
     @Override
     public View onCreateView( LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-
+        //获取viewModel的实例
         viewModel = new ViewModelProvider(this).get(PlaceViewModel.class);
 
         return inflater.inflate(R.layout.fragment_place,container,false);
@@ -51,6 +53,8 @@ public class PlaceFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         if(getActivity().getClass().equals(MainActivity.class) && viewModel.isPlaceSaved()){
+            Log.d("Test","进入读取存储的模式");
+
             PlaceResponse.Place place = viewModel.getSavedPlace();
             Intent intent = new Intent(getContext(), WeatherActivity.class);
             intent.putExtra("location_lng",place.getLocation().getLng());
@@ -61,7 +65,9 @@ public class PlaceFragment extends Fragment {
             getActivity().finish();
             return;
         }
-
+        Log.d("Test","activity 测试" + getActivity().getClass().equals(MainActivity.class));
+        Log.d("Test","未进入读取模式");
+        //设置各个组件
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 
         RecyclerView recyclerView = (RecyclerView) getActivity().findViewById(R.id.recyclerView);
@@ -71,7 +77,7 @@ public class PlaceFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         ImageView bgImageView;
-        bgImageView = getActivity().findViewById(R.id.bgImageView);
+        bgImageView = (ImageView) getActivity().findViewById(R.id.bgImageView);
 
         EditText searchPlaceEdit = getActivity().findViewById(R.id.searchPlaceEdit);
         searchPlaceEdit.addTextChangedListener(new TextWatcher() {
@@ -83,12 +89,8 @@ public class PlaceFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
                 String content = s.toString();
+                Log.d("PlaceFragment","query is " + content);
                 if(content.isEmpty()){
                     recyclerView.setVisibility(View.GONE);
 
@@ -98,23 +100,32 @@ public class PlaceFragment extends Fragment {
                 }
                 else {
                     viewModel.searchPlace(content);
+                    //测试下面是这里未能获取到livedata
+                    Log.d("PlaceFragment","" + viewModel.placeLiveData.getValue());
                 }
+            }
+            @Override
+            public void afterTextChanged(Editable s) {
+
             }
 
         });
 
+        //转换后的livedata观察数据变化
         viewModel.placeLiveData.observe(getViewLifecycleOwner(), new Observer<List<PlaceResponse.Place>>() {
             @Override
             public void onChanged(List<PlaceResponse.Place> placeList) {
                 if(placeList != null){
+                    //Log.d("PlaceFragment","placeList in final LiveData is "+ placeList.get(0));
+                    Log.d("PlaceFragment","数据已变化");
                     recyclerView.setVisibility(View.VISIBLE);
                     bgImageView.setVisibility(View.GONE);
                     viewModel.listClear();
                     viewModel.addAllList(placeList);
                     adapter.notifyDataSetChanged();
-
                 }
                 else{
+                    Log.d("PlaceFragment","数据空");
                     Toast.makeText(getActivity(),"未能查询到任何地点",Toast.LENGTH_SHORT).show();
                     //错误处理
                 }

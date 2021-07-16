@@ -3,11 +3,11 @@ package com.example.sunny.logic.network;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class ServiceCreator {
-    private static String BASE_HRL = "https://api.caiyunapp.com/";
+public class ServiceCreator<T> {
+    private static String BASE_URL = "https://api.caiyunapp.com/";
 
-    static Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl(BASE_HRL)
+    static final Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build();
 
@@ -18,6 +18,12 @@ public class ServiceCreator {
 
     public static WeatherService WCreate(Class<WeatherService> weatherServiceClass){
         WeatherService weatherService = retrofit.create(weatherServiceClass);
-        return weatherService;
+       return weatherService;
     }
+
+    public T Create(Class<T> ServiceClass){
+        T Service = retrofit.create(ServiceClass);
+        return Service;
+    }
+
 }

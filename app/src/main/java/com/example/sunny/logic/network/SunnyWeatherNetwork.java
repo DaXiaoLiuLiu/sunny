@@ -9,12 +9,15 @@ import com.example.sunny.logic.model.RealtimeResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-/*这里可能出先线程不安全问题*/
+/*这里可能出先线程不安全问题
+* 这里面定义了三个方法，用于搜索位置数据，实时天气数据和
+* 未来天气信息
+* */
 public class SunnyWeatherNetwork {
       private static PlaceService placeService = ServiceCreator.PCreate(PlaceService.class);
-      private static PlaceResponse Presult = null;
+      private static PlaceResponse Presult = new PlaceResponse();
 
-      public static PlaceResponse searchPlaces(String query){
+      public  PlaceResponse searchPlaces(String query){
 
           placeService.searchPlace(query).enqueue(new Callback<PlaceResponse>() {
               @Override
@@ -22,12 +25,13 @@ public class SunnyWeatherNetwork {
                   PlaceResponse  body= response.body();
                   if(body!=null){
                       Presult = body;
+                      Log.d("SunnyWeatherNetWork","response body is not null");
+                      Log.d("SunnyWeatherNetWork","status is " +Presult.getStatus() );
                   }
                   else {
                       Log.d("SunnyWeatherNetWork","response body is null");
                   }
               }
-
               @Override
               public void onFailure(Call<PlaceResponse> call, Throwable t) {
                   Log.d("SunnyWeatherNetWork","连接错误");
@@ -37,52 +41,67 @@ public class SunnyWeatherNetwork {
           return Presult;
       }
 
-      private static WeatherService weatherService = ServiceCreator.WCreate(WeatherService.class);
+      //下面是搜索天气模块
+      private final WeatherService weatherService = ServiceCreator.WCreate(WeatherService.class);
 
-      private static RealtimeResponse Rresult;
+      private static RealtimeResponse Rresult ;
       private static DailyResponse Dresult;
+      private static Boolean RFlag = false;//标志位
+      private static Boolean DFlag = true;
 
-      public static RealtimeResponse getRealtimeWeather(String lng,String lat){
+      public  RealtimeResponse getRealtimeWeather(String lng,String lat){
 
           weatherService.getRealtimeWeather(lng,lat).enqueue(new Callback<RealtimeResponse>() {
               @Override
               public void onResponse(Call<RealtimeResponse> call, Response<RealtimeResponse> response) {
                   if(response.body() != null){
                       Rresult = response.body();
+                      RFlag = true;
+                      Log.d("SunnyWeatherNetWork1","status is " +Rresult.getStatus() );
+                      Log.d("SunnyWeatherNetWork1","Realtime response body is not null");
                   }
                   else {
-                      Log.d("SunnyWeatherNetWork","Realtime response body is null");
+                      Log.d("SunnyWeatherNetWork1","Realtime response body is null");
                   }
               }
 
               @Override
               public void onFailure(Call<RealtimeResponse> call, Throwable t) {
-                  Log.d("SunnyWeatherNetWork"," RealTime connect failed");
+                  Log.d("SunnyWeatherNetWork1"," RealTime connect failed");
                   t.printStackTrace();
               }
           });
-          return Rresult;
+          if(RFlag) return Rresult;
+          return null;
       }
 
-      public static DailyResponse getDailyWeather(String lng,String lat){
+      //获取未来天气数据
+      public DailyResponse getDailyWeather(String lng,String lat){
+          Log.d("SunnyWeatherNetWork","查看传入的lng和lat" + lng + " " + lat);
+
           weatherService.getDailyWeather(lng,lat).enqueue(new Callback<DailyResponse>() {
               @Override
               public void onResponse(Call<DailyResponse> call, Response<DailyResponse> response) {
                   if(response.body() != null){
                       Dresult = response.body();
+                      DFlag = true;
+                      Log.d("SunnyWeatherNetWork2","Dailytime response body is not null");
+                      Log.d("SunnyWeatherNetWork2","Dresult is " +Dresult.getResult() );
+
                   }
                   else {
-                      Log.d("SunnyWeatherNetWork","Daily response body is null");
+                      Log.d("SunnyWeatherNetWork2","Daily response body is null");
                   }
               }
 
               @Override
               public void onFailure(Call<DailyResponse> call, Throwable t) {
-                  Log.d("SunnyWeatherNetWork","Daily connect failed");
+                  Log.d("SunnyWeatherNetWork2","Daily connect failed");
                   t.printStackTrace();
               }
           });
-            return Dresult;
+          if(DFlag) return Dresult;
+            return null;
       }
 
 }

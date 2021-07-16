@@ -4,6 +4,12 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 import java.util.List;
+/*
+ * @Author Lxf
+ * @Date 2021/7/16 10:29
+ * @Description 位置信息数据模型类
+ * @Since version-1.0
+ */
 
 public class PlaceResponse {
     private  String status = new String();
@@ -28,7 +34,7 @@ public class PlaceResponse {
     public class Place {
         private String name;
         private String address;
-        @SerializedName("formatted_address")
+        //@SerializedName("formatted_address")
         private Location location;
 
         public String getName() {
@@ -56,7 +62,7 @@ public class PlaceResponse {
         }
     }
 
-    public static class Location {
+    public  static class Location {
         private String lat;
         private String lng;
 

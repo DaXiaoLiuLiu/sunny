@@ -3,13 +3,16 @@
     android:id="@+id/nowLayout"
     android:layout_width="match_parent"
     android:layout_height="530dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+
+    >
 
     <FrameLayout
         android:id="@+id/titleLayout"
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:fitsSystemWindows="true">
+        android:fitsSystemWindows="true"
+        >
 
         <Button
             android:id="@+id/navBtn"
@@ -30,7 +33,8 @@
             android:singleLine="true"
             android:ellipsize="middle"
             android:textColor="#fff"
-            android:textSize="22sp"/>
+            android:textSize="22sp"
+            />
 
     </FrameLayout>
 
