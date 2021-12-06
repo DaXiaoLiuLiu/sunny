@@ -93,7 +93,6 @@ public class WeatherActivity extends AppCompatActivity {
 
             }
             else {
-
                 viewModel.locationLat = getIntent().getStringExtra("location_lat");
                 Log.d("WeatherActivity","lat is " + viewModel.locationLat);
             }

@@ -76,13 +76,11 @@ public class Repository {
                     RealtimeResponse realtimeResponse ;
                     DailyResponse dailyResponse ;
 
-                    //该处的do while 循环是为了解决 网络请求进程 的同步问题，使用sleep后，可以减少网络请求次数
-                    do {
-                        realtimeResponse = sunnyWeatherNetwork.getRealtimeWeather(lng, lat);
-                        dailyResponse = sunnyWeatherNetwork.getDailyWeather(lng, lat);
-                        Log.d("Repository","refresh Weather 数据申请中");
-                        sleep(500);
-                    }while (realtimeResponse == null || dailyResponse == null);//只有两个不为null时才跳出循环
+                    //这里已经解决了线程同步问题，不会出现空指针异常
+
+                    realtimeResponse = sunnyWeatherNetwork.getRealtimeWeather(lng, lat);
+                    dailyResponse = sunnyWeatherNetwork.getDailyWeather(lng, lat);
+                    Log.d("Repository","refresh Weather 数据申请中");
 
                     if(realtimeResponse.getStatus().equals("ok") && dailyResponse.getStatus().equals("ok")){
                         Weather weather = new Weather(realtimeResponse.getResult().getRealtime(),
